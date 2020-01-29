@@ -1,6 +1,7 @@
 {
   "name": "@nexus-switchboard/nexus-conn-jira",
   "version": "0.0.2",
+  "keywords": ["nexus-connection"],
   "description": "Lite wrapper around a jira client that provides nexus connection interfaces.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
