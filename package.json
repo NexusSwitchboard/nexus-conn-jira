@@ -1,7 +1,9 @@
 {
   "name": "@nexus-switchboard/nexus-conn-jira",
   "version": "0.0.2",
-  "keywords": ["nexus-connection"],
+  "keywords": [
+    "nexus-connection"
+  ],
   "description": "Lite wrapper around a jira client that provides nexus connection interfaces.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +22,7 @@
     "debug": "^4.1.1",
     "jira.js": "^1.1.1",
     "moment": "^2.24.0",
-    "@nexus-switchboard/nexus-extend": "~0.4.3"
+    "@nexus-switchboard/nexus-extend": "^0.4"
   },
   "devDependencies": {
     "@types/node": "^12.7.5",
