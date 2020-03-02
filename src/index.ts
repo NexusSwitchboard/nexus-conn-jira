@@ -1,27 +1,153 @@
-import {Client} from "jira.js";
+import { Client } from 'jira.js';
+import { Application, Request, Response } from 'express';
+import assert from 'assert';
+import moment from 'moment';
+import { Connection, ConnectionConfig } from '@nexus-switchboard/nexus-extend';
+import { AtlassianAddon, WebhookConfiguration } from './addon';
+import debug from 'debug';
+import bodyParser from "body-parser";
 
-import assert from "assert";
-import moment from "moment";
-import {Connection, ConnectionConfig} from "@nexus-switchboard/nexus-extend";
+export const logger = debug('nexus:jira');
 
 export type JiraTicket = {
-    [index: string]: any;
-};
+    [index: string]: any
+}
+
+export type JiraPayload = {
+    [index: string]: any
+}
+
+export interface IWebhookPayload {
+    timestamp: string,
+    event: string,
+
+    [index: string]: any
+}
+
 
 export interface IJiraConfig {
     host: string;
     username: string;
     apiToken: string;
+
+    // This is required if you are adding functionality that requires that a Jira instance communicate
+    // with this module (webhooks, for example).
+    subApp?: Application;
+
+    // If the name and key are not filled in then an addon will not
+    //  be  created.  Otherwise, a new AtlassianAddon object will be
+    //  created and instantiated  under the addon property of this JiraConnection
+    //  instance.
+    addon?:  {
+        key: string;
+        name:  string;
+        description?: string;
+    };
+
+    // If there are any settings that would cause this connection to expose endpoints, then
+    //  this is the base URL expected for that endpoint.  This is expected to be everything before the portion
+    //  of the path that will be handled by the connection.  In other words, it might be something like this:
+    //      https://mydomain.com/m/mymod
+    baseUrl?: string;
+
+    // A list of webhooks to register for.
+    //  https://developer.atlassian.com/cloud/jira/platform/modules/webhook/
+    webhooks: WebhookConfiguration[];
 }
 
+/**
+ * The  Jira connection object is capable of hosting an Addon server but also
+ * connects and exposes the REST API for Jira.  In this capacity, it makes public
+ * a property called "api" which is an instance of the jira.js client library.
+ * Information at the  library is available here:
+ *  https://jira-node.github.io/
+ *
+ *  An addon, at a minimum needs a unique key and a name.  But for it actually
+ *      do something you will need to fill in the IJiraConfig prop with
+ *      Jira module extensions (like webhooks or something else that can only
+ *      be done by an addon).
+ */
 export class JiraConnection extends Connection {
     public api: Client;
 
-    public name = "Jira";
+    public name = 'Jira';
     public config: IJiraConfig;
+    public addon: AtlassianAddon;
 
     protected priorityCache: any[];
     protected resolutionCache: any[];
+
+    public connect(): JiraConnection {
+        this.priorityCache = null;
+        this.resolutionCache = null;
+
+        // REST API Connectivity
+        this.api = new Client({
+            host: this.config.host,
+            authentication: {
+                basic: {
+                    username: this.config.username,
+                    apiToken: this.config.apiToken
+                }
+            }
+        });
+
+        // Ensure that JSON payload bodies are parsed and ready for usage by
+        //  all downstream routes.
+        this.config.subApp.use(bodyParser.json());
+
+        // JIRA Add-On Setup
+        this.setupAddon();
+
+        return this;
+    }
+
+    public disconnect(): boolean {
+        delete this.api;
+        return true;
+    }
+
+    /**
+     * If the Jira configuration given has any indication that this will act as a Jira Add-On
+     * (meaning) that it has something like webhooks specified, then this will setup the connection
+     * to be able to receive requests from Jira.
+     *
+     * The Atlassian Addon (Connect) Descriptor is a well-defined object that is returned from
+     * a known endpoint for this addon.  Information about the addon can be found here:
+     *  https://developer.atlassian.com/cloud/jira/platform/app-descriptor/
+     *
+     * The endpoints from the addon setup are as follows:
+     *
+     *  Webhooks:
+     *      POST ${config.addon.baseUrl}/${BASE_PATH_ADDON}/webhooks/${event-name}
+     *
+     *  Descriptor:
+     *      GET ${config.addon.baseUrl}/${BASE_PATH_ADDON}/addon
+     */
+    public setupAddon() {
+
+        if (!this.config.addon) {
+            return;
+        }
+
+        // Now create the addon object which handles constructing the addon as
+        //  expected by Jira.
+        this.addon = new AtlassianAddon( {
+            key: this.config.addon.key,
+            baseUrl: this.config.baseUrl,
+            authentication: {
+                type: 'jwt'
+            }}, this.config.subApp);
+
+        if (this.config.webhooks) {
+
+            this.addon.addWebhooks(this.config.webhooks);
+        }
+
+        this.config.subApp.get('/test', (_req: Request, res: Response) => {
+            res.send('Hello world!');
+        });
+    }
 
     /**
      * Takes a typical Jira date string found in a response and returns it in a friendly string form.  This will
@@ -33,11 +159,16 @@ export class JiraConnection extends Connection {
      * @param originalDateString The original date string (probably ISO)
      * @param relative If true, it returns something like "2 days ago" instead of the full date and time.
      */
-    public friendlyDateString(originalDateString: string, relative: boolean = false): string {
+    public friendlyDateString(
+        originalDateString: string,
+        relative: boolean = false
+    ): string {
         if (relative) {
             return moment(originalDateString).fromNow();
         } else {
-            return moment(originalDateString).format("MMMM Do, YYYY [at] hh:mm a");
+            return moment(originalDateString).format(
+                'MMMM Do, YYYY [at] hh:mm a'
+            );
         }
     }
 
@@ -48,10 +179,10 @@ export class JiraConnection extends Connection {
      * @param key The jira key.
      */
     public keyToWebLink(jiraHost: string, key: string): string {
-        assert(jiraHost, "Jira host not given in keyToWebLink method");
-        assert(key, "Jira key not given in keyToWebLink method");
+        assert(jiraHost, 'Jira host not given in keyToWebLink method');
+        assert(key, 'Jira key not given in keyToWebLink method');
 
-        if (jiraHost.trim().indexOf("http") < 0) {
+        if (jiraHost.trim().indexOf('http') < 0) {
             return `https://${jiraHost}/browse/${key}`;
         } else {
             return `${jiraHost}/browse/${key}`;
@@ -67,18 +198,17 @@ export class JiraConnection extends Connection {
      * @param apiVersion
      */
     public transformDescriptionText(text: string, apiVersion: number): any {
-
         if (apiVersion === 3) {
             return {
-                type: "doc",
+                type: 'doc',
                 version: 1,
                 content: [
                     {
-                        type: "paragraph",
+                        type: 'paragraph',
                         content: [
                             {
                                 text,
-                                type: "text"
+                                type: 'text'
                             }
                         ]
                     }
@@ -87,9 +217,10 @@ export class JiraConnection extends Connection {
         } else if (apiVersion === 2) {
             return text;
         } else {
-            throw new Error("Unknown API version given for text transformation function");
+            throw new Error(
+                'Unknown API version given for text transformation function'
+            );
         }
-
     }
 
     /**
@@ -104,7 +235,9 @@ export class JiraConnection extends Connection {
             this.priorityCache = await this.api.issuePriorities.getPriorities();
         }
 
-        const priority = this.priorityCache.find((p) => p.name.toLowerCase() === name.toLowerCase());
+        const priority = this.priorityCache.find(
+            p => p.name.toLowerCase() === name.toLowerCase()
+        );
         return priority ? priority.id : undefined;
     }
 
@@ -121,30 +254,10 @@ export class JiraConnection extends Connection {
             this.resolutionCache = await this.api.issueResolutions.getResolutions();
         }
 
-        const res = this.resolutionCache.find((p) => p.name.toLowerCase() === name.toLowerCase());
+        const res = this.resolutionCache.find(
+            p => p.name.toLowerCase() === name.toLowerCase()
+        );
         return res ? res.id : undefined;
-    }
-
-    public connect(): JiraConnection {
-        this.priorityCache = null;
-        this.resolutionCache = null;
-
-        this.api = new Client({
-            host: this.config.host,
-            authentication: {
-                basic: {
-                    username: this.config.username,
-                    apiToken: this.config.apiToken
-                }
-            }
-        });
-
-        return this;
-    }
-
-    public disconnect(): boolean {
-        delete this.api;
-        return true;
     }
 }
 
