@@ -2,7 +2,7 @@ import { Client } from 'jira.js';
 import { Application, Request, Response } from 'express';
 import assert from 'assert';
 import moment from 'moment';
-import { Connection, ConnectionConfig } from '@nexus-switchboard/nexus-extend';
+import { Connection, ConnectionConfig, GlobalConfig } from '@nexus-switchboard/nexus-extend';
 import { AtlassianAddon, WebhookConfiguration } from './addon';
 import debug from 'debug';
 import bodyParser from "body-parser";
@@ -261,6 +261,6 @@ export class JiraConnection extends Connection {
     }
 }
 
-export default function createConnection(cfg: ConnectionConfig): Connection {
-    return new JiraConnection(cfg);
+export default function createConnection(cfg: ConnectionConfig, globalCfg: GlobalConfig): Connection {
+    return new JiraConnection(cfg, globalCfg);
 }
