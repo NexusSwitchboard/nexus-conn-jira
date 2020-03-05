@@ -3,6 +3,7 @@ import Keyv from "keyv";
 import { Application, Router } from "express";
 import authenticationMiddleware from "./auth";
 import { IWebhookPayload, logger } from "../index";
+import bodyParser from "body-parser";
 
 export const BASE_PATH_ADDON = "/jira/addon";
 
@@ -181,6 +182,9 @@ export class AtlassianAddon {
         // The meta router is the root for the endpoints used for
         //  installation, uninstallation and descriptor requests from Jira.
         this.metaRouter = Router();
+        // Ensure that JSON payload bodies are parsed and ready for usage by
+        //  all downstream routes.
+        this.metaRouter.use(bodyParser.json());
         this.subApp.use(`${BASE_PATH_ADDON}/meta`, this.metaRouter);
 
         //// this builds out the lifecycle property of the descriptor.  Done this
@@ -265,6 +269,7 @@ export class AtlassianAddon {
          *          typed properties in the connection configuration.
          */
         this.subApp.post(route,
+            bodyParser.json(),
             authenticationMiddleware(this),
             async (req: Request, res: Response, next: NextFunction) => {
 

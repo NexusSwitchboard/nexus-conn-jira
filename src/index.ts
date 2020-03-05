@@ -92,10 +92,6 @@ export class JiraConnection extends Connection {
             }
         });
 
-        // Ensure that JSON payload bodies are parsed and ready for usage by
-        //  all downstream routes.
-        this.config.subApp.use(bodyParser.json());
-
         // JIRA Add-On Setup
         this.setupAddon();
 
