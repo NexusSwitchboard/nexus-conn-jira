@@ -52,6 +52,10 @@ export interface IJiraConfig {
     // A list of webhooks to register for.
     //  https://developer.atlassian.com/cloud/jira/platform/modules/webhook/
     webhooks: WebhookConfiguration[];
+
+    // The key/value store to use with keyv to store persistant data. Note that this can be either redis or
+    //  SQLite and the connection string docs are available here: https://github.com/lukechilds/keyv
+    connectionString: string;
 }
 
 /**
@@ -132,7 +136,7 @@ export class JiraConnection extends Connection {
             baseUrl: this.config.baseUrl,
             authentication: {
                 type: 'jwt'
-            }}, this.config.subApp);
+            }}, this.config.subApp, this.config.connectionString);
 
         if (this.config.webhooks) {
 

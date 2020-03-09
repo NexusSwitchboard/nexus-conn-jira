@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@keyv/redis": "^2.1.0",
     "@keyv/sqlite": "^2.0.2",
     "@nexus-switchboard/nexus-extend": "^0.5",
     "@types/request": "^2.48.4",
