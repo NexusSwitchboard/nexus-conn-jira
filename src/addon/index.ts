@@ -21,10 +21,10 @@ export interface IDescriptorModule {
 
 export interface IWebhookDefinition extends IDescriptorModule {
     event: string
-    url: string
-    excludeBody: boolean
-    filter: string
-    propertyKeys: string[]
+    url?: string
+    excludeBody?: boolean
+    filter?: string
+    propertyKeys?: string[]
 }
 
 export type WebhookConfiguration = {

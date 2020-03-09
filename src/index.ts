@@ -5,7 +5,6 @@ import moment from 'moment';
 import { Connection, ConnectionConfig, GlobalConfig } from '@nexus-switchboard/nexus-extend';
 import { AtlassianAddon, WebhookConfiguration } from './addon';
 import debug from 'debug';
-import bodyParser from "body-parser";
 
 export const logger = debug('nexus:jira');
 
