@@ -3,7 +3,7 @@ import { Application, Request, Response } from 'express';
 import assert from 'assert';
 import moment from 'moment';
 import { Connection, ConnectionConfig, GlobalConfig } from '@nexus-switchboard/nexus-extend';
-import { AtlassianAddon, WebhookConfiguration } from './addon';
+import { AtlassianAddon, WebhookConfiguration } from "atlassian-addon-helper"
 import debug from 'debug';
 
 export const logger = debug('nexus:jira');
@@ -13,13 +13,6 @@ export type JiraTicket = {
 }
 
 export type JiraPayload = {
-    [index: string]: any
-}
-
-export interface IWebhookPayload {
-    timestamp: string,
-    event: string,
-
     [index: string]: any
 }
 
@@ -136,7 +129,11 @@ export class JiraConnection extends Connection {
             baseUrl: this.config.baseUrl,
             authentication: {
                 type: 'jwt'
-            }}, this.config.subApp, this.config.connectionString);
+            }},
+            this.config.subApp,
+            "/jira/addon",
+            this.config.connectionString
+        );
 
         if (this.config.webhooks) {
 
