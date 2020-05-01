@@ -126,6 +126,8 @@ export class JiraConnection extends Connection {
         //  expected by Jira.
         this.addon = new AtlassianAddon( {
             key: this.config.addon.key,
+            name: this.config.addon.name,
+            description: this.config.addon.description,
             baseUrl: this.config.baseUrl,
             authentication: {
                 type: 'jwt'
