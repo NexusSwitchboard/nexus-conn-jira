@@ -1,5 +1,5 @@
 import { Client } from 'jira.js';
-import { Application, Request, Response } from 'express';
+import { Application } from 'express';
 import assert from 'assert';
 import moment from 'moment';
 import { Connection, ConnectionConfig, GlobalConfig } from '@nexus-switchboard/nexus-extend';
@@ -34,6 +34,10 @@ export interface IJiraConfig {
         key: string;
         name:  string;
         description?: string;
+        vendor?: {
+            name: string,
+            url: string
+        }
     };
 
     // If there are any settings that would cause this connection to expose endpoints, then
@@ -128,23 +132,26 @@ export class JiraConnection extends Connection {
             key: this.config.addon.key,
             name: this.config.addon.name,
             description: this.config.addon.description,
+            vendor: this.config.addon.vendor,
             baseUrl: this.config.baseUrl,
-            authentication: {
+            authentication: {               // authentication type
                 type: 'jwt'
             }},
-            this.config.subApp,
-            "/jira/addon",
-            this.config.connectionString
+            this.config.subApp,             // root app
+            "/jira/addon",                  // path to addon endpoints
+            this.config.connectionString,   // db connection string
+            undefined,                      // max token age
+            {
+                apiToken: this.config.apiToken,
+                username: this.config.username,
+                host: this.config.host
+            }
         );
 
         if (this.config.webhooks) {
 
             this.addon.addWebhooks(this.config.webhooks);
         }
-
-        this.config.subApp.get('/test', (_req: Request, res: Response) => {
-            res.send('Hello world!');
-        });
     }
 
     /**
