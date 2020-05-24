@@ -19,7 +19,7 @@
   "dependencies": {
     "@nexus-switchboard/nexus-extend": "^0.5.7",
     "assert": "^2.0.0",
-    "atlassian-addon-helper": "0.0.2",
+    "atlassian-addon-helper": "0.0.4",
     "atlassian-connect-express": "^4.0.1",
     "atlassian-jwt": "^1.0.3",
     "atlassian-oauth2": "^0.4.2",
