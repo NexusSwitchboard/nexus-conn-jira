@@ -73,6 +73,7 @@ export class JiraConnection extends Connection {
     public name = 'Jira';
     public config: IJiraConfig;
     public addon: AtlassianAddon;
+    public myself: JiraPayload;
 
     protected priorityCache: any[];
     protected resolutionCache: any[];
@@ -95,12 +96,21 @@ export class JiraConnection extends Connection {
         // JIRA Add-On Setup
         this.setupAddon();
 
+        // Get API user info
+        this.api.myself.getCurrentUser().then((response: JiraPayload)=>{
+            this.myself = response;
+        })
+
         return this;
     }
 
     public disconnect(): boolean {
         delete this.api;
         return true;
+    }
+
+    public getApiUserAccountId() {
+        return this.myself ? this.myself.accountId : undefined;
     }
 
     /**
