@@ -2,7 +2,7 @@ import { Client } from 'jira.js';
 import { Application } from 'express';
 import assert from 'assert';
 import moment from 'moment';
-import { Connection, ConnectionConfig, GlobalConfig } from '@nexus-switchboard/nexus-extend';
+import { Connection, ConnectionConfig, GlobalConfig } from '@nexus-switchboard/nexus-core';
 import { AtlassianAddon, WebhookConfiguration } from "atlassian-addon-helper"
 import debug from 'debug';
 
