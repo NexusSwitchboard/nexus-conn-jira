@@ -1,6 +1,6 @@
 {
   "name": "@nexus-switchboard/nexus-conn-jira",
-  "version": "0.1.16",
+  "version": "0.2.0",
   "keywords": [
     "nexus-connection"
   ],
@@ -17,7 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@nexus-switchboard/nexus-extend": "^0.5.11",
+    "@nexus-switchboard/nexus-core": "^0.6.0",
     "assert": "^2.0.0",
     "atlassian-addon-helper": "^0.1.0",
     "atlassian-connect-express": "^4.1.0",
