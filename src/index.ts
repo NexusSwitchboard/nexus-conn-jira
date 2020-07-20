@@ -70,7 +70,7 @@ export interface IJiraConfig {
 export class JiraConnection extends Connection {
     public api: Client;
 
-    public name = 'Jira';
+    public name = 'nexus-conn-jira';
     public config: IJiraConfig;
     public addon: AtlassianAddon;
     public myself: JiraPayload;
