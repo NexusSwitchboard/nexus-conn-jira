@@ -1,4 +1,4 @@
-import { Client } from 'jira.js';
+import { Version2Client as Client, Version2 } from 'jira.js/src';
 import { Application } from 'express';
 import assert from 'assert';
 import moment from 'moment';
@@ -11,11 +11,6 @@ export const logger = debug('nexus:jira');
 export type JiraTicket = {
     [index: string]: any
 }
-
-export type JiraPayload = {
-    [index: string]: any
-}
-
 
 export interface IJiraConfig {
     host: string;
@@ -73,7 +68,7 @@ export class JiraConnection extends Connection {
     public name = 'nexus-conn-jira';
     public config: IJiraConfig;
     public addon: AtlassianAddon;
-    public myself: JiraPayload;
+    public myself: Version2.Version2Models.User;
 
     protected priorityCache: any[];
     protected resolutionCache: any[];
@@ -87,7 +82,7 @@ export class JiraConnection extends Connection {
             host: this.config.host,
             authentication: {
                 basic: {
-                    username: this.config.username,
+                    email: this.config.username,
                     apiToken: this.config.apiToken
                 }
             }
@@ -97,7 +92,7 @@ export class JiraConnection extends Connection {
         this.setupAddon();
 
         // Get API user info
-        this.api.myself.getCurrentUser().then((response: JiraPayload)=>{
+        this.api.myself.getCurrentUser().then((response)=>{
             this.myself = response;
         })
 
